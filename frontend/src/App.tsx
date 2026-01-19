@@ -5,6 +5,11 @@ import "./App.css";
 
 function App() {
   const [count, setCount] = useState(0);
+  const [textToCopy, setTextToCopy] = useState("Hello World!");
+
+  function handleCopy() {
+    window.electron.copyText(textToCopy);
+  }
 
   return (
     <>
@@ -28,6 +33,15 @@ function App() {
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
+      <div className="flex">
+        <input
+          type="text"
+          value={textToCopy}
+          onChange={(e) => setTextToCopy(e.target.value)}
+          className="border rounded-sm p-1"
+        />
+        <button onClick={handleCopy}>Copy</button>
+      </div>
     </>
   );
 }

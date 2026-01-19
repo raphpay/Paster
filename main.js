@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, ipcMain, clipboard } = require("electron");
 const path = require("path");
 
 function createWindow() {
@@ -50,4 +50,8 @@ app.on("will-quit", () => {
 
 app.on("ready", () => {
   // Perform any necessary setup when the app is ready
+});
+
+ipcMain.on("clipboard:copy", (event, text) => {
+  clipboard.writeText(text);
 });
