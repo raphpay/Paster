@@ -3,6 +3,8 @@ const { watch } = require("fs/promises");
 const path = require("path");
 
 let mainWindow;
+let lastClipboardText = "";
+const clipboardHistory = [];
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -51,14 +53,11 @@ app.on("will-quit", () => {
   // Perform any necessary cleanup before quitting the app
 });
 
-let lastClipboardText = "";
-
 function watchClipboard() {
   setInterval(() => {
     const text = clipboard.readText();
     if (text && text !== lastClipboardText) {
       lastClipboardText = text;
-
       let item = {
         id: Date.now(),
         text,
@@ -66,7 +65,6 @@ function watchClipboard() {
       };
 
       mainWindow.webContents.send("clipboard:new-item", item);
-      console.log("Nouveau texte:", item);
     }
   }, 500);
 }
@@ -76,5 +74,20 @@ app.on("ready", () => {
 });
 
 ipcMain.on("clipboard:copy", (event, text) => {
+  lastClipboardText = text;
   clipboard.writeText(text);
+
+  const item = {
+    id: Date.now(),
+    text,
+    timestamp: Date.now(),
+  };
+
+  clipboardHistory.unshift(item);
+  mainWindow.webContents.send("clipboard:new-item", item);
+});
+
+ipcMain.handle("clipboard:get-history", () => {
+  console.log("history", clipboardHistory);
+  return clipboardHistory;
 });
