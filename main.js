@@ -1,8 +1,11 @@
 const { app, BrowserWindow, ipcMain, clipboard } = require("electron");
+const { watch } = require("fs/promises");
 const path = require("path");
 
+let mainWindow;
+
 function createWindow() {
-  const win = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
@@ -15,10 +18,10 @@ function createWindow() {
   const isDev = !app.isPackaged;
 
   if (isDev) {
-    win.loadURL("http://localhost:5173");
-    win.webContents.openDevTools();
+    mainWindow.loadURL("http://localhost:5173");
+    mainWindow.webContents.openDevTools();
   } else {
-    win.loadFile(path.join(__dirname, "../frontend/dist/index.html"));
+    mainWindow.loadFile(path.join(__dirname, "../frontend/dist/index.html"));
   }
 }
 
@@ -48,8 +51,28 @@ app.on("will-quit", () => {
   // Perform any necessary cleanup before quitting the app
 });
 
+let lastClipboardText = "";
+
+function watchClipboard() {
+  setInterval(() => {
+    const text = clipboard.readText();
+    if (text && text !== lastClipboardText) {
+      lastClipboardText = text;
+
+      let item = {
+        id: Date.now(),
+        text,
+        timestamp: Date.now(),
+      };
+
+      mainWindow.webContents.send("clipboard:new-item", item);
+      console.log("Nouveau texte:", item);
+    }
+  }, 500);
+}
+
 app.on("ready", () => {
-  // Perform any necessary setup when the app is ready
+  watchClipboard();
 });
 
 ipcMain.on("clipboard:copy", (event, text) => {
