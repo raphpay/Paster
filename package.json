@@ -1,0 +1,19 @@
+{
+  "name": "Paster",
+  "version": "0.0.1",
+  "description": "Paste manager",
+  "main": "main.js",
+  "author": "raphpay",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dev": "concurrently \"yarn --cwd frontend dev\" \"wait-on http://localhost:5173 && electron .\"",
+    "build": "yarn --cwd frontend build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "electron": "^40.0.0",
+    "wait-on": "^9.0.3"
+  }
+}
