@@ -53,7 +53,6 @@ async function checkClipboard() {
 
       // Get metadata (App Name)
       const windowInfo = await activeWindow();
-      console.log("windowInfo:", windowInfo);
 
       const item = {
         id: Date.now(),
@@ -110,6 +109,9 @@ app.on("will-quit", () => {
 ipcMain.on("clipboard:copy", (event, text) => {
   lastClipboardText = text; // Update this so our watcher doesn't trigger a loop
   clipboard.writeText(text);
+
+  if (mainWindow && !mainWindow.isDestroyed() && mainWindow.isVisible())
+    mainWindow.hide();
 });
 
 // Check Permissions (macOS focus)
