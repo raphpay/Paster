@@ -1,4 +1,11 @@
-const { app, BrowserWindow, ipcMain, clipboard, shell } = require("electron");
+const {
+  app,
+  BrowserWindow,
+  ipcMain,
+  clipboard,
+  shell,
+  screen,
+} = require("electron/main");
 const path = require("path");
 const { activeWindow, screenRecordingPermission } = require("get-windows");
 
@@ -9,9 +16,15 @@ let pollingInterval;
 
 // --- Window Management ---
 function createWindow() {
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { width, height } = primaryDisplay.workAreaSize;
+
   mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: width,
+    height: 350,
+    x: 0,
+    y: height,
+    frame: false, // Add frame: false to remove the default frame ( removes the title bar and border )
     webPreferences: {
       preload: path.join(__dirname, "preload.js"), // Use path.join for reliability
       contextIsolation: true,
