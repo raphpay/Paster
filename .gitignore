@@ -139,3 +139,9 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Others
+*.save
+
+# Specific to this project
+app-info.txt
