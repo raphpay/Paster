@@ -28,16 +28,17 @@ function App() {
   useEffect(() => {
     // Check on startup
     window.electron.checkPermissions().then((allowed: boolean) => {
+      console.log("Permissions checked:", allowed);
       setHasPermission(allowed);
     });
   }, []);
 
   return (
-    <>
+    <div className="min-w-screen min-h-screen">
       {!hasPermission && <PermissionAlert />}
 
       <Main history={history} />
-    </>
+    </div>
   );
 }
 

@@ -17,7 +17,7 @@ function Main({ history }: Props) {
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="h-full w-full p-2">
       <input
         type="text"
         value={textToCopy}
