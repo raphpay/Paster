@@ -5,6 +5,7 @@ const {
   clipboard,
   shell,
   screen,
+  globalShortcut,
 } = require("electron/main");
 const path = require("path");
 const { activeWindow, screenRecordingPermission } = require("get-windows");
@@ -77,6 +78,17 @@ app.whenReady().then(() => {
 
   // Start polling every 1 second (Balanced for performance vs reactivity)
   pollingInterval = setInterval(checkClipboard, 1000);
+
+  // Register the keyboard shortcut to open/hide the window
+  globalShortcut.register("CommandOrControl+Shift+V", () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      if (mainWindow.isVisible()) {
+        mainWindow.hide();
+      } else {
+        mainWindow.show();
+      }
+    }
+  });
 });
 
 app.on("window-all-closed", () => {
@@ -88,6 +100,7 @@ app.on("activate", () => {
 });
 
 app.on("will-quit", () => {
+  globalShortcut.unregisterAll();
   clearInterval(pollingInterval);
 });
 
