@@ -9,4 +9,6 @@ contextBridge.exposeInMainWorld("electron", {
     ipcRenderer.on("clipboard:new-item", subscription);
     return () => ipcRenderer.removeListener("clipboard:new-item", subscription);
   },
+  checkPermissions: () => ipcRenderer.invoke("permissions:check"),
+  openSettings: () => ipcRenderer.send("permissions:open-settings"),
 });

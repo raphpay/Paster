@@ -5,11 +5,13 @@ interface ClipboardItem {
   id: number;
   text: string;
   timestamp: number;
+  sourceApp: string;
 }
 
 function App() {
   const [textToCopy, setTextToCopy] = useState("Hello World!");
   const [history, setHistory] = useState<ClipboardItem[]>([]);
+  const [hasPermission, setHasPermission] = useState(true);
 
   function handleCopy() {
     window.electron.copyText(textToCopy);
@@ -36,8 +38,30 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    // Check on startup
+    window.electron.checkPermissions().then((allowed: boolean) => {
+      setHasPermission(allowed);
+    });
+  }, []);
+
   return (
     <>
+      {!hasPermission && (
+        <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-4">
+          <p className="text-sm text-yellow-700">
+            L'accès à l'enregistrement de l'écran est nécessaire pour détecter
+            l'origine des copies.
+            <button
+              onClick={() => window.electron.openSettings()}
+              className="ml-2 underline font-bold"
+            >
+              Ouvrir les réglages
+            </button>
+          </p>
+        </div>
+      )}
+
       <div className="flex flex-col">
         <input
           type="text"
@@ -56,9 +80,14 @@ function App() {
               onClick={() => handleCopyFromHistory(item)}
             >
               <span>{item.text}</span>
-              <span className="text-xs text-gray-500">
-                {new Date(item.timestamp).toLocaleTimeString()}
-              </span>
+              <div className="flex items-center">
+                <span className="text-xs text-gray-500 px-1">
+                  {new Date(item.timestamp).toLocaleTimeString()}
+                </span>
+                <span className="text-xs text-gray-500 px-1">
+                  {item.sourceApp ?? "None"}
+                </span>
+              </div>
             </li>
           ))}
         </ul>
