@@ -26,6 +26,9 @@ function createWindow() {
     x: 0,
     y: height,
     frame: false, // Add frame: false to remove the default frame ( removes the title bar and border )
+    transparent: true,
+    alwaysOnTop: true,
+    skipTaskbar: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"), // Use path.join for reliability
       contextIsolation: true,
@@ -117,7 +120,7 @@ ipcMain.on("clipboard:copy", (event, text) => {
 // Check Permissions (macOS focus)
 ipcMain.handle("permissions:check", async () => {
   if (process.platform !== "darwin") return true;
-  return screenRecordingPermission();
+  return screenRecordingPermission;
 });
 
 // Open Privacy Settings
