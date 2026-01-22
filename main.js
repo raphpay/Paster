@@ -5,6 +5,7 @@ const {
   clipboard,
   shell,
   screen,
+  globalShortcut,
 } = require("electron/main");
 const path = require("path");
 const { activeWindow, screenRecordingPermission } = require("get-windows");
@@ -25,6 +26,9 @@ function createWindow() {
     x: 0,
     y: height,
     frame: false, // Add frame: false to remove the default frame ( removes the title bar and border )
+    transparent: true,
+    alwaysOnTop: true,
+    skipTaskbar: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"), // Use path.join for reliability
       contextIsolation: true,
@@ -52,7 +56,6 @@ async function checkClipboard() {
 
       // Get metadata (App Name)
       const windowInfo = await activeWindow();
-      console.log("windowInfo:", windowInfo);
 
       const item = {
         id: Date.now(),
@@ -77,6 +80,27 @@ app.whenReady().then(() => {
 
   // Start polling every 1 second (Balanced for performance vs reactivity)
   pollingInterval = setInterval(checkClipboard, 1000);
+
+  // Register the keyboard shortcut to open/hide the window
+  globalShortcut.register("CommandOrControl+Shift+V", () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      if (mainWindow.isVisible()) {
+        hideApp();
+      } else {
+        showApp();
+      }
+    }
+  });
+
+  // Register handles
+  ipcMain.handle("window:hide", handleWindowHide);
+
+  // Detects when the window loses focus
+  mainWindow.on("blur", () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      hideApp();
+    }
+  });
 });
 
 app.on("window-all-closed", () => {
@@ -88,6 +112,7 @@ app.on("activate", () => {
 });
 
 app.on("will-quit", () => {
+  globalShortcut.unregisterAll();
   clearInterval(pollingInterval);
 });
 
@@ -97,12 +122,15 @@ app.on("will-quit", () => {
 ipcMain.on("clipboard:copy", (event, text) => {
   lastClipboardText = text; // Update this so our watcher doesn't trigger a loop
   clipboard.writeText(text);
+
+  if (mainWindow && !mainWindow.isDestroyed() && mainWindow.isVisible())
+    hideApp();
 });
 
 // Check Permissions (macOS focus)
 ipcMain.handle("permissions:check", async () => {
   if (process.platform !== "darwin") return true;
-  return screenRecordingPermission();
+  return screenRecordingPermission;
 });
 
 // Open Privacy Settings
@@ -113,3 +141,26 @@ ipcMain.on("permissions:open-settings", () => {
     );
   }
 });
+
+// Handle window hide
+function handleWindowHide() {
+  if (mainWindow && !mainWindow.isDestroyed() && mainWindow.isVisible())
+    mainWindow.hide();
+}
+
+// App show/hide
+function showApp() {
+  mainWindow.show(); // Ensure the window is visible
+  app.show(); // macOS: Bring the app back into the Cmd+Tab list
+  mainWindow.focus();
+}
+
+// 2. To hide the app
+function hideApp() {
+  // On macOS, app.hide() hides the app but keeps it in the Cmd+Tab cycle
+  if (process.platform === "darwin") {
+    app.hide();
+  } else {
+    mainWindow.hide();
+  }
+}
