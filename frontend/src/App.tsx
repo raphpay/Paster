@@ -10,14 +10,25 @@ function App() {
   const [history, setHistory] = useState<ClipboardItem[]>([]);
   // const [hasPermission, setHasPermission] = useState(true);
 
+  // Load history from app cache on startup
+  useEffect(() => {
+    async function init() {
+      const history = await window.electron.loadHistory();
+      setHistory(history);
+    }
+    init();
+  }, []);
+
   useEffect(() => {
     // On récupère la fonction de nettoyage
     const removeListener = window.electron.onClipboardNewItem(
       (item: ClipboardItem) => {
         setHistory((prev) => {
           // Sécurité anti-doublon par ID
-          if (prev.find((i) => i.text === item.text)) return prev;
-          return [item, ...prev];
+          if (prev.find((i) => i.id === item.id)) return prev;
+          const newHistory = [item, ...prev];
+          window.electron.saveHistory(newHistory);
+          return newHistory;
         });
       },
     );
