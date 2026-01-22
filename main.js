@@ -85,15 +85,22 @@ app.whenReady().then(() => {
   globalShortcut.register("CommandOrControl+Shift+V", () => {
     if (mainWindow && !mainWindow.isDestroyed()) {
       if (mainWindow.isVisible()) {
-        mainWindow.hide();
+        hideApp();
       } else {
-        mainWindow.show();
+        showApp();
       }
     }
   });
 
   // Register handles
   ipcMain.handle("window:hide", handleWindowHide);
+
+  // Detects when the window loses focus
+  mainWindow.on("blur", () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      hideApp();
+    }
+  });
 });
 
 app.on("window-all-closed", () => {
@@ -117,7 +124,7 @@ ipcMain.on("clipboard:copy", (event, text) => {
   clipboard.writeText(text);
 
   if (mainWindow && !mainWindow.isDestroyed() && mainWindow.isVisible())
-    mainWindow.hide();
+    hideApp();
 });
 
 // Check Permissions (macOS focus)
@@ -139,4 +146,21 @@ ipcMain.on("permissions:open-settings", () => {
 function handleWindowHide() {
   if (mainWindow && !mainWindow.isDestroyed() && mainWindow.isVisible())
     mainWindow.hide();
+}
+
+// App show/hide
+function showApp() {
+  mainWindow.show(); // Ensure the window is visible
+  app.show(); // macOS: Bring the app back into the Cmd+Tab list
+  mainWindow.focus();
+}
+
+// 2. To hide the app
+function hideApp() {
+  // On macOS, app.hide() hides the app but keeps it in the Cmd+Tab cycle
+  if (process.platform === "darwin") {
+    app.hide();
+  } else {
+    mainWindow.hide();
+  }
 }
