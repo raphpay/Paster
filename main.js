@@ -91,6 +91,9 @@ app.whenReady().then(() => {
       }
     }
   });
+
+  // Register handles
+  ipcMain.handle("window:hide", handleWindowHide);
 });
 
 app.on("window-all-closed", () => {
@@ -131,3 +134,9 @@ ipcMain.on("permissions:open-settings", () => {
     );
   }
 });
+
+// Handle window hide
+function handleWindowHide() {
+  if (mainWindow && !mainWindow.isDestroyed() && mainWindow.isVisible())
+    mainWindow.hide();
+}

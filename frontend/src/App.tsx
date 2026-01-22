@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import PermissionAlert from "./components/PermissionAlert";
+// To be added later
+// import PermissionAlert from "./components/PermissionAlert";
 import type ClipboardItem from "./types/ClipboardItem";
 import Main from "./components/Main";
+import StatusBar from "./components/StatusBar";
 
 function App() {
   const [history, setHistory] = useState<ClipboardItem[]>([]);
-  const [hasPermission, setHasPermission] = useState(true);
+  // const [hasPermission, setHasPermission] = useState(true);
 
   useEffect(() => {
     // On récupère la fonction de nettoyage
@@ -25,17 +27,20 @@ function App() {
     };
   }, []);
 
-  useEffect(() => {
-    // Check on startup
-    window.electron.checkPermissions().then((allowed: boolean) => {
-      console.log("Permissions checked:", allowed);
-      setHasPermission(allowed);
-    });
-  }, []);
+  // useEffect(() => {
+  //   // Check on startup
+  //   window.electron.checkPermissions().then((allowed: boolean) => {
+  //     console.log("Permissions checked:", allowed);
+  //     setHasPermission(allowed);
+  //   });
+  // }, []);
 
   return (
     <div className="min-w-screen min-h-screen">
-      {!hasPermission && <PermissionAlert />}
+      {/*To be added later*/}
+      {/*{!hasPermission && <PermissionAlert />}*/}
+
+      <StatusBar />
 
       <Main history={history} />
     </div>
