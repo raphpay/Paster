@@ -23,12 +23,12 @@ function Card({ item, isSelected, index, setSelectedIndex }: Props) {
 
   return (
     <div
-      className={`flex grow flex-col border rounded-md p-4 max-w-65 h-full overflow-hidden shadow-sm transition-colors bg-white
+      className={`flex grow flex-col border rounded-md p-4 max-w-65 h-full overflow-hidden shadow-sm transition-colors
         hover:bg-gray-100 cursor-pointer
         ${
           isSelected
-            ? "border-blue-500 ring-1 ring-blue-500"
-            : "border-gray-200"
+            ? "border-blue-500 ring-1 ring-blue-500 bg-gray-100"
+            : "border-gray-200 bg-white"
         }`}
       onClick={() => setSelectedIndex(index)}
       onDoubleClick={handleDoubleClick}
