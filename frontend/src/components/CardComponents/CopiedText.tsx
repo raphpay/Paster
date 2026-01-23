@@ -4,7 +4,7 @@ interface Props {
 
 function CopiedText({ value }: Props) {
   return (
-    <p className="grow h-full w-full overflow-y-auto wrap-break-words text-gray-700 text-md scrollbar-hide py-2">
+    <p className="h-50 w-50 overflow-y-auto overflow-x-hidden wrap-break-words text-gray-700 text-md py-2">
       {value}
     </p>
   );

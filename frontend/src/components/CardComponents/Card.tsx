@@ -10,11 +10,11 @@ import DateText from "./DateText";
 interface Props {
   item: ClipboardItem;
   isSelected: boolean;
+  index: number;
+  setSelectedIndex: (index: number) => void;
 }
 
-function Card({ item, isSelected }: Props) {
-  console.log("item", item, isSelected);
-
+function Card({ item, isSelected, index, setSelectedIndex }: Props) {
   return (
     <div
       className={`flex grow flex-col border rounded-md p-4 max-w-65 h-full overflow-hidden shadow-sm transition-colors bg-white
@@ -24,6 +24,7 @@ function Card({ item, isSelected }: Props) {
             ? "border-blue-500 ring-1 ring-blue-500"
             : "border-gray-200"
         }`}
+      onClick={() => setSelectedIndex(index)}
     >
       <AppNameText name={item.sourceApp ?? "Incoonnue"} />
       <Separator />

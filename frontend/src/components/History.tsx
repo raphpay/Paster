@@ -1,5 +1,7 @@
 // React
+
 // Models
+import { useEffect, useRef, useState } from "react";
 import type ClipboardItem from "../types/ClipboardItem";
 // Components
 import Card from "./CardComponents/Card";
@@ -9,30 +11,67 @@ interface Props {
 }
 
 function History({ history }: Props) {
-  function handleCopyFromHistory(item: ClipboardItem) {
-    window.electron.copyText(item.text);
-  }
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // To be removed to handle conditional rendering
-  const emptyItem: ClipboardItem = {
-    id: 0,
-    sourceApp: "Inconnu",
-    text: "",
-    timestamp: 0,
-  };
+  // --- Keyboard navigation logic ---
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (history.length === 0) return;
+
+      if (e.key === "ArrowRight") {
+        const newIndex = Math.min(selectedIndex + 1, history.length - 1);
+        setSelectedIndex(newIndex);
+      }
+      if (e.key === "ArrowLeft") {
+        const newIndex = Math.max(selectedIndex - 1, 0);
+        setSelectedIndex(newIndex);
+      }
+      if (e.key === "Enter") {
+        window.electron.copyText(history[selectedIndex].text);
+      }
+    };
+
+    // Add listener
+    window.addEventListener("keydown", handleKeyDown);
+    // Remove listener when component unmounts
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [history, selectedIndex]);
+
+  // Auto-scroll to selected card
+  useEffect(() => {
+    const selectedCard = scrollContainerRef.current?.children[
+      selectedIndex
+    ] as HTMLElement;
+    if (selectedCard) {
+      selectedCard.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+    }
+  }, [selectedIndex]);
 
   return (
-    <>
-      {history.length === 0 ? (
-        <div className="h-full w-full grow flex flex-col p-2">
-          <Card item={history[0] ?? emptyItem} isSelected={false} />
-        </div>
+    <div
+      ref={scrollContainerRef}
+      className="h-full grow flex flex-row p-2 overflow-x-auto snap-x "
+    >
+      {history.length > 0 ? (
+        history.map((item, index) => (
+          <div className="h-full p-2">
+            <Card
+              item={item}
+              isSelected={index === selectedIndex}
+              index={index}
+              setSelectedIndex={setSelectedIndex}
+            />
+          </div>
+        ))
       ) : (
-        <div className="h-full w-full grow flex items-center justify-center">
-          <h2 className="text-xl font-semibold">Pas de texte copié</h2>
-        </div>
+        <div>Pas de text copié</div>
       )}
-    </>
+    </div>
   );
 }
 
