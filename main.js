@@ -14,6 +14,7 @@ const { activeWindow, screenRecordingPermission } = require("get-windows");
 let mainWindow;
 let lastClipboardText = clipboard.readText();
 let pollingInterval;
+let store;
 
 // --- Window Management ---
 function createWindow() {
@@ -45,37 +46,11 @@ function createWindow() {
   }
 }
 
-// --- Logic: Clipboard Tracking ---
-async function checkClipboard() {
-  try {
-    const text = clipboard.readText();
-
-    // Only proceed if text has changed and isn't empty
-    if (text && text !== lastClipboardText) {
-      lastClipboardText = text;
-
-      // Get metadata (App Name)
-      const windowInfo = await activeWindow();
-
-      const item = {
-        id: Date.now(),
-        text,
-        timestamp: new Date().toISOString(),
-        sourceApp: windowInfo?.owner?.name ?? "Unknown",
-      };
-
-      // Send to Frontend
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send("clipboard:new-item", item);
-      }
-    }
-  } catch (err) {
-    console.error("Clipboard Monitoring Error:", err);
-  }
-}
-
 // --- App Lifecycle ---
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  const { default: Store } = await import("electron-store");
+  store = new Store();
+
   createWindow();
 
   // Start polling every 1 second (Balanced for performance vs reactivity)
@@ -116,6 +91,10 @@ app.on("will-quit", () => {
   clearInterval(pollingInterval);
 });
 
+app.on("browser-window-focus", async () => {
+  await cleanUpHistory();
+});
+
 // --- IPC Listeners ---
 
 // Handle manual copy from your UI back to the system clipboard
@@ -142,6 +121,31 @@ ipcMain.on("permissions:open-settings", () => {
   }
 });
 
+ipcMain.handle("store:load-history", async () => {
+  const history = await store.get("history");
+  return history || [];
+});
+
+ipcMain.on("store:save-history", (event, data) => {
+  store.set("history", data);
+});
+
+ipcMain.on("store:clear-history", () => {
+  store.set("history", []);
+});
+
+ipcMain.on("store:delete-history", (event, id) => {
+  const history = store.get("history");
+  if (!history) return;
+
+  const updatedHistory = history.filter((item) => item.id !== id);
+  store.set("history", updatedHistory);
+});
+
+ipcMain.on("store:delete-all-history", () => {
+  store.set("history", []);
+});
+
 // Handle window hide
 function handleWindowHide() {
   if (mainWindow && !mainWindow.isDestroyed() && mainWindow.isVisible())
@@ -163,4 +167,46 @@ function hideApp() {
   } else {
     mainWindow.hide();
   }
+}
+
+// --- Logic: Clipboard Tracking ---
+async function checkClipboard() {
+  try {
+    const text = clipboard.readText();
+
+    // Only proceed if text has changed and isn't empty
+    if (text && text !== lastClipboardText) {
+      lastClipboardText = text;
+
+      // Get metadata (App Name)
+      const windowInfo = await activeWindow();
+
+      const item = {
+        id: Date.now(),
+        text,
+        timestamp: new Date().toISOString(),
+        sourceApp: windowInfo?.owner?.name ?? "Unknown",
+      };
+
+      // Send to Frontend
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send("clipboard:new-item", item);
+      }
+    }
+  } catch (err) {
+    console.error("Clipboard Monitoring Error:", err);
+  }
+}
+
+// --- Logic: History Management
+async function cleanUpHistory() {
+  const history = await store.get("history");
+
+  const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000;
+
+  const filtered = history.filter((item) => item.id > twentyFourHoursAgo);
+
+  store.set("history", filtered);
+
+  return filtered;
 }

@@ -16,15 +16,34 @@ function Main({ history }: Props) {
     window.electron.copyText(item.text);
   }
 
+  function handleSave() {
+    window.electron.saveHistory("Random text");
+  }
+
+  async function retrieveHistory() {
+    const res = await window.electron.loadHistory();
+    console.log("res", res);
+  }
+
+  function handleClear() {
+    window.electron.clearHistory();
+  }
+
   return (
     <div className="h-full w-full p-2">
-      <input
+      <button onClick={handleSave}>Save</button>
+
+      <button onClick={retrieveHistory}>Retrieve History</button>
+
+      <button onClick={handleClear}>Clear</button>
+
+      {/*<input
         type="text"
         value={textToCopy}
         onChange={(e) => setTextToCopy(e.target.value)}
         className="border rounded-sm p-1"
       />
-      <button onClick={handleCopy}>Copy</button>
+      <button onClick={handleCopy}>Copy</button>*/}
 
       <h2 className="text-lg font-bold mb-2">Historique du presse-papiers</h2>
       <ul className="border rounded p-2 max-h-96 overflow-y-auto">
