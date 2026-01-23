@@ -27,7 +27,7 @@ function Card({ item, isSelected, index, setSelectedIndex }: Props) {
         hover:bg-gray-100 cursor-pointer
         ${
           isSelected
-            ? "border-blue-500 ring-1 ring-blue-500 bg-gray-100"
+            ? "border-blue-500 ring-1 ring-blue-500 bg-gray-200"
             : "border-gray-200 bg-white"
         }`}
       onClick={() => setSelectedIndex(index)}
