@@ -15,6 +15,12 @@ interface Props {
 }
 
 function Card({ item, isSelected, index, setSelectedIndex }: Props) {
+  function handleDoubleClick() {
+    if (item.text) {
+      window.electron.copyText(item.text);
+    }
+  }
+
   return (
     <div
       className={`flex grow flex-col border rounded-md p-4 max-w-65 h-full overflow-hidden shadow-sm transition-colors bg-white
@@ -25,6 +31,7 @@ function Card({ item, isSelected, index, setSelectedIndex }: Props) {
             : "border-gray-200"
         }`}
       onClick={() => setSelectedIndex(index)}
+      onDoubleClick={handleDoubleClick}
     >
       <AppNameText name={item.sourceApp ?? "Incoonnue"} />
       <Separator />
