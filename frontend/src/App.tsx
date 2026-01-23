@@ -1,14 +1,25 @@
+// React
 import { useEffect, useState } from "react";
-import "./App.css";
+
+// Models
+import type ClipboardItem from "./types/ClipboardItem";
+// Components
+import History from "./components/History";
+import StatusBar from "./components/StatusBar";
 // To be added later
 // import PermissionAlert from "./components/PermissionAlert";
-import type ClipboardItem from "./types/ClipboardItem";
-import Main from "./components/Main";
-import StatusBar from "./components/StatusBar";
+
+// Styles
+import "./App.css";
 
 function App() {
   const [history, setHistory] = useState<ClipboardItem[]>([]);
   // const [hasPermission, setHasPermission] = useState(true);
+
+  function handleClear() {
+    setHistory([]);
+    window.electron.clearHistory();
+  }
 
   // Load history from app cache on startup
   useEffect(() => {
@@ -47,13 +58,15 @@ function App() {
   // }, []);
 
   return (
-    <div className="min-w-screen min-h-screen">
+    <div className="min-w-screen min-h-screen flex flex-col flex-1">
       {/*To be added later*/}
       {/*{!hasPermission && <PermissionAlert />}*/}
 
       <StatusBar />
 
-      <Main history={history} />
+      {/*<button onClick={handleClear}>Clean history</button>*/}
+
+      <History history={history} />
     </div>
   );
 }
