@@ -91,6 +91,10 @@ app.on("will-quit", () => {
   clearInterval(pollingInterval);
 });
 
+app.on("browser-window-focus", async () => {
+  await cleanUpHistory();
+});
+
 // --- IPC Listeners ---
 
 // Handle manual copy from your UI back to the system clipboard
@@ -192,4 +196,17 @@ async function checkClipboard() {
   } catch (err) {
     console.error("Clipboard Monitoring Error:", err);
   }
+}
+
+// --- Logic: History Management
+async function cleanUpHistory() {
+  const history = await store.get("history");
+
+  const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000;
+
+  const filtered = history.filter((item) => item.id > twentyFourHoursAgo);
+
+  store.set("history", filtered);
+
+  return filtered;
 }
