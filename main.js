@@ -184,7 +184,7 @@ async function checkClipboard() {
       const item = {
         id: Date.now(),
         text,
-        timestamp: new Date().toISOString(),
+        timestamp: Date.now(),
         sourceApp: windowInfo?.owner?.name ?? "Unknown",
       };
 
